@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WCAG Contrast Checker</title>
+  <script type="module" crossorigin src="../src/index.js"></script>
+  <link rel="modulepreload" crossorigin href="../src/popup.js">
+  <link rel="stylesheet" crossorigin href="../src/index.css">
+</head>
+<body class="font-sans w-[350px] p-4 m-0">
+  <h1 class="text-xl font-bold mt-0 mb-2 pb-2 text-gray-800 border-b border-gray-200 pt-2.5">WCAG 2.1 Contrast Checker</h1>
+  
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center gap-2.5 color-picker">
+      <label for="text-color" class="w-30 font-medium">Text Color:</label>
+      <input type="color" id="text-color" value="#000000" class="w-10 h-10 border-none">
+      <input type="text" id="text-hex" value="#000000" class="w-20 p-1.5 border border-gray-300 rounded">
+    </div>
+    
+    <div class="flex items-center gap-2.5 color-picker">
+      <label for="bg-color" class="w-30 font-medium">Background Color:</label>
+      <input type="color" id="bg-color" value="#FFFFFF" class="w-10 h-10 border-none">
+      <input type="text" id="bg-hex" value="#FFFFFF" class="w-20 p-1.5 border border-gray-300 rounded">
+    </div>
+    
+    <!-- Single div for displaying either sample text or selected text -->
+    <div class="p-4 rounded border-gray-300 border-2 my-2.5 text-base text-center max-h-[150px] overflow-auto" id="display-text"></div>
+    
+    <div class="mt-2.5 p-2.5 border border-gray-300 rounded bg-gray-50">
+      <div class="font-bold text-lg text-center my-2.5" id="contrast-ratio">Contrast: 21:1</div>
+      
+      <div class="mb-1.5" id="aa-normal">AA placeholder <span class="pass">Pass/Fail</span></div>
+      <div class="mb-1.5" id="aaa-normal">AAA placeholder <span class="pass">Pass/Fail</span></div>
+    </div>
+    
+    <div class="text-xs text-gray-500 mt-4 border-t border-gray-200 pt-2.5">
+      <p>You can also right-click on text in any webpage and select "Check Color Contrast" to analyze the selected text.</p>
+    </div>
+  </div>
+  
+</body>
+</html>
