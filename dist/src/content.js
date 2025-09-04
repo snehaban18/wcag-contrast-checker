@@ -199,75 +199,6 @@ function generateComplianceHTML(level, compliance) {
   `;
 }
 
-// Function to be injected into the page
-function injectResults(results) {
-  // Create overlay container
-  const overlay = document.createElement('div');
-  overlay.id = 'wcag-contrast-overlay';
-  overlay.className = 'fixed top-5 right-5 bg-white border border-gray-300 rounded p-4 shadow-lg z-[9999] font-sans max-w-[300px]';
-  
-  // Create content
-  const content = document.createElement('div');
-  
-  // Create color swatches
-  const swatches = document.createElement('div');
-  swatches.className = 'flex mb-3';
-  
-  const textSwatch = document.createElement('div');
-  textSwatch.className = 'w-[50px] h-[50px] mr-3 border border-gray-200';
-  
-  textSwatch.style.backgroundColor = getColorValue(results.textColor);
-  
-  const bgSwatch = document.createElement('div');
-  bgSwatch.className = 'w-[50px] h-[50px] border border-gray-200';
-  
-  bgSwatch.style.backgroundColor = getColorValue(results.backgroundColor);
-  
-  swatches.appendChild(textSwatch);
-  swatches.appendChild(bgSwatch);
-  
-  // Create results text
-  const title = document.createElement('h3');
-  title.textContent = 'Contrast Results';
-  title.className = 'm-0 mb-3 text-lg font-semibold';
-  
-  const ratio = document.createElement('p');
-  ratio.className = 'mb-2';
-  ratio.innerHTML = `<strong>Contrast ratio:</strong> ${results.contrastRatio}:1`;
-  
-  const aaResults = document.createElement('p');
-  aaResults.className = 'mb-2';
-  aaResults.innerHTML = generateComplianceHTML('AA', results.compliance.AA);
-  
-  const aaaResults = document.createElement('p');
-  aaaResults.className = 'mb-2';
-  aaaResults.innerHTML = generateComplianceHTML('AAA', results.compliance.AAA);
-  
-  const colorInfo = document.createElement('p');
-  colorInfo.className = 'mt-3';
-  
-  const textColorDisplay = getColorValue(results.textColor);
-  const bgColorDisplay = getColorValue(results.backgroundColor);
-  
-  colorInfo.innerHTML = `
-    <strong>Text color:</strong> ${textColorDisplay}<br>
-    <strong>Background color:</strong> ${bgColorDisplay}
-  `;
-  
-  // Assemble overlay
-  content.appendChild(title);
-  content.appendChild(swatches);
-  content.appendChild(ratio);
-  content.appendChild(aaResults);
-  content.appendChild(aaaResults);
-  content.appendChild(colorInfo);
-  
-  overlay.appendChild(content);
-  
-  // Add to page
-  document.body.appendChild(overlay);
-}
-
 // Function to process text selection and return formatted results
 function processTextSelection(selection) {
   if (!selection || selection.isCollapsed) {
@@ -304,52 +235,18 @@ function formatResultsForDisplay(results) {
 
 
 // Content.js code
-// Content script for WCAG Contrast Checker extension
+// This script only works on the open page, processing selected text and sending response to popup.
+
+// Import the necessary functions from utils.js
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  // Handle request to get selected text from popup
-  if (message.action === "getSelectedText") {
+  if (message.action === "checkContrast") {
     const selection = window.getSelection();
-    const resultsForPopup = processTextSelection(selection);
+    const results = processTextSelection(selection);
     
-    // Send response back to popup
-    sendResponse(resultsForPopup || { selectedText: null });
-    return false; // Synchronous response
-  }
-  
-  // Handle request to check contrast from context menu
-  else if (message.action === "checkContrastFromSelection") {
-    const selection = window.getSelection();
-    const resultsForPopup = processTextSelection(selection);
-    
-    if (resultsForPopup) {
-      // Send results to background script
-      chrome.runtime.sendMessage({
-        action: "getContrastResult",
-        results: resultsForPopup
-      }, (response) => {
-        // Handle response if needed
-        if (response && response.status === "success") {
-          // Inject results overlay after successful storage
-          // Note: We need to use the original results object with RGB values for the overlay
-          const originalResults = {
-            textColor: resultsForPopup.textColor,
-            backgroundColor: resultsForPopup.backgroundColor,
-            contrastRatio: resultsForPopup.contrastRatio,
-            compliance: resultsForPopup.compliance,
-            selectedText: resultsForPopup.selectedText
-          };
-          injectResults(originalResults);
-        }
-      });
-      
-      // Indicate we're handling the message synchronously
-      sendResponse({ status: "processing" });
-    } else {
-      // No valid selection
-      sendResponse({ status: "no_selection" });
-    }
+    // Simply send back the results, let the caller decide what to do with them
+    sendResponse(results || { status: "no_selection" });
     return false; // We've already called sendResponse
   }
   return false; // Not handling this message

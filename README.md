@@ -75,12 +75,10 @@ This project is built with:
 - `src/content.js` - Content script for extracting colors from selected text
 - `src/background.js` - Background script for context menu functionality
 
-### Code Design
+### Testing
 
-The extension follows these design principles:
-- **Modularity**: Core functionality is separated into utility functions
-- **Reusability**: Common operations like UI updates are consolidated into helper functions
-- **Centralized Defaults**: Default values are defined as constants in a single location
-- **Clean UI**: The popup interface uses a single display area for both sample text and selected text
-- Chrome Extension Manifest V3
+The extension includes automated tests using Playwright. To run the tests, execute the following command:
+```
+npm run test
+``` 
 

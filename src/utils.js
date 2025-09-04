@@ -196,75 +196,6 @@ function generateComplianceHTML(level, compliance) {
   `;
 }
 
-// Function to be injected into the page
-function injectResults(results) {
-  // Create overlay container
-  const overlay = document.createElement('div');
-  overlay.id = 'wcag-contrast-overlay';
-  overlay.className = 'fixed top-5 right-5 bg-white border border-gray-300 rounded p-4 shadow-lg z-[9999] font-sans max-w-[300px]';
-  
-  // Create content
-  const content = document.createElement('div');
-  
-  // Create color swatches
-  const swatches = document.createElement('div');
-  swatches.className = 'flex mb-3';
-  
-  const textSwatch = document.createElement('div');
-  textSwatch.className = 'w-[50px] h-[50px] mr-3 border border-gray-200';
-  
-  textSwatch.style.backgroundColor = getColorValue(results.textColor);
-  
-  const bgSwatch = document.createElement('div');
-  bgSwatch.className = 'w-[50px] h-[50px] border border-gray-200';
-  
-  bgSwatch.style.backgroundColor = getColorValue(results.backgroundColor);
-  
-  swatches.appendChild(textSwatch);
-  swatches.appendChild(bgSwatch);
-  
-  // Create results text
-  const title = document.createElement('h3');
-  title.textContent = 'Contrast Results';
-  title.className = 'm-0 mb-3 text-lg font-semibold';
-  
-  const ratio = document.createElement('p');
-  ratio.className = 'mb-2';
-  ratio.innerHTML = `<strong>Contrast ratio:</strong> ${results.contrastRatio}:1`;
-  
-  const aaResults = document.createElement('p');
-  aaResults.className = 'mb-2';
-  aaResults.innerHTML = generateComplianceHTML('AA', results.compliance.AA);
-  
-  const aaaResults = document.createElement('p');
-  aaaResults.className = 'mb-2';
-  aaaResults.innerHTML = generateComplianceHTML('AAA', results.compliance.AAA);
-  
-  const colorInfo = document.createElement('p');
-  colorInfo.className = 'mt-3';
-  
-  const textColorDisplay = getColorValue(results.textColor);
-  const bgColorDisplay = getColorValue(results.backgroundColor);
-  
-  colorInfo.innerHTML = `
-    <strong>Text color:</strong> ${textColorDisplay}<br>
-    <strong>Background color:</strong> ${bgColorDisplay}
-  `;
-  
-  // Assemble overlay
-  content.appendChild(title);
-  content.appendChild(swatches);
-  content.appendChild(ratio);
-  content.appendChild(aaResults);
-  content.appendChild(aaaResults);
-  content.appendChild(colorInfo);
-  
-  overlay.appendChild(content);
-  
-  // Add to page
-  document.body.appendChild(overlay);
-}
-
 // Function to process text selection and return formatted results
 function processTextSelection(selection) {
   if (!selection || selection.isCollapsed) {
@@ -317,7 +248,6 @@ export {
   getColorValue,
   analyzeContrast,
   generateComplianceHTML,
-  injectResults,
   processTextSelection,
   formatResultsForDisplay
 };

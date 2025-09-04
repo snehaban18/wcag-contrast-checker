@@ -8,7 +8,7 @@ import {
   generateComplianceHTML,
   DEFAULT_TEXT_COLOR,
   DEFAULT_BG_COLOR,
-  DEFAULT_SAMPLE_TEXT,
+  DEFAULT_SAMPLE_TEXT
 } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,81 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const contrastRatio = document.getElementById('contrast-ratio');
   const aaNormal = document.getElementById('aa-normal');
   const aaaNormal = document.getElementById('aaa-normal');
-  
-  // Function to set default colors and text
-  function setDefaults() {
-    updateUIWithColors(textColorInput, bgColorInput, DEFAULT_TEXT_COLOR, DEFAULT_BG_COLOR);
-    updateUIWithColors(textHexInput, bgHexInput, DEFAULT_TEXT_COLOR, DEFAULT_BG_COLOR);
-    displayText.textContent = DEFAULT_SAMPLE_TEXT;
-    calculateContrast();
-  }
-  
-  // Function to update UI elements with color values
-  function updateUIWithColors(textElement, bgElement, textColor, bgColor) {
-    if (textElement) textElement.value = textColor;
-    if (bgElement) bgElement.value = bgColor;
-  }
 
-  // Function to update UI with colors and text from results
-  function updateUIWithResults(results) {
-    updateUIWithColors(textColorInput, bgColorInput, results.textColor, results.backgroundColor);
-    updateUIWithColors(textHexInput, bgHexInput, results.textColor, results.backgroundColor);
-    
-    if (results.selectedText) {
-      displayText.textContent = results.selectedText;
-      displayText.style.color = textColorInput.value;
-      displayText.style.backgroundColor = bgColorInput.value;
-    }    
-    updateResults(parseFloat(results.contrastRatio), results.compliance);
-  }
-  
-  function checkForSelectedText() {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs && tabs[0]) {
-        // Send a message to the content script to get any selected text
-        chrome.tabs.sendMessage(tabs[0].id, { action: "getSelectedText" }, (response) => {
-          // If there was an error (like content script not loaded), just continue
-          if (chrome.runtime.lastError) {
-            setDefaults();
-            return;
-          }
-          
-          if (response && response.selectedText) {
-            updateUIWithResults(response);
-          } 
-          else {
-            setDefaults();
-          }
-        });
-      }
-    });
-  }
-  
-  // Set defaults on initial load
-  setDefaults();
-
-  // Check if there are stored results from context menu selection
-  chrome.storage.local.get(['contrastResults'], (data) => {
-    if (data.contrastResults) {
-      const results = data.contrastResults;
-      
-      // Update UI with stored results
-      updateUIWithResults(results);
-      
-      // If no selected text in stored results, check for current selection
-      if (!results.selectedText) {
-        checkForSelectedText();
-      }
-      
-      // Clean up stored results after using them
-      // This prevents them from being reused on next popup open
-      chrome.storage.local.remove(['contrastResults']);
-    } 
-    else {
-      // No stored results, check for any current selection
-      checkForSelectedText();
-    }
-  });
+  // On init, always check for any current selection
+  checkForSelectedText();
 
   // Add event listeners for color inputs
   textColorInput.addEventListener('input', () => {
@@ -126,6 +54,60 @@ document.addEventListener('DOMContentLoaded', () => {
       calculateContrast();
     }
   });
+
+  
+  // HELPER FUNCTIONS
+
+  // Function to set default colors and text
+  function setDefaults() {
+    updateUIWithColors(textColorInput, bgColorInput, DEFAULT_TEXT_COLOR, DEFAULT_BG_COLOR);
+    updateUIWithColors(textHexInput, bgHexInput, DEFAULT_TEXT_COLOR, DEFAULT_BG_COLOR);
+    displayText.textContent = DEFAULT_SAMPLE_TEXT;
+    calculateContrast();
+  }
+  
+  // Function to update UI elements with color values
+  function updateUIWithColors(textElement, bgElement, textColor, bgColor) {
+    if (textElement) textElement.value = textColor;
+    if (bgElement) bgElement.value = bgColor;
+  }
+
+  // Function to update UI with colors and text from results
+  function updateUIWithResults(results) {
+    updateUIWithColors(textColorInput, bgColorInput, results.textColor, results.backgroundColor);
+    updateUIWithColors(textHexInput, bgHexInput, results.textColor, results.backgroundColor);
+    
+    if (results.selectedText) {
+      displayText.textContent = results.selectedText;
+      displayText.style.color = results.textColor;
+      displayText.style.backgroundColor = results.backgroundColor;
+    }    
+    updateResults(parseFloat(results.contrastRatio), results.compliance);
+  }
+  
+  function checkForSelectedText() {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs && tabs[0]) {
+        // Send a message to the content script to get any selected text and check contrast
+        chrome.tabs.sendMessage(tabs[0].id, { 
+          action: "checkContrast"
+        }, (response) => {
+          // If there was an error (like content script not loaded), just continue
+          if (chrome.runtime.lastError) {
+            setDefaults();
+            return;
+          }
+          
+          if (response && response.selectedText) {
+            updateUIWithResults(response);
+          } 
+          else {
+            setDefaults();
+          }
+        });
+      }
+    });
+  }
 
   // Function to calculate contrast ratio
   function calculateContrast() {
